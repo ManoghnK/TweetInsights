@@ -25,7 +25,7 @@ api = tweepy.API(auth)
 
 def sentiment_analysis(search_query,numtweets):
     tweets=tweepy.Cursor(api.search,q=search_query,lang="en",since="2020-10-13").items(numtweets)
-    tweetsfinal=[]
+    #tweetsfinal=[]
     polarity=0
 
     positive=0
@@ -45,26 +45,42 @@ def sentiment_analysis(search_query,numtweets):
         #print(final_text.encode("utf-8"))
         analysis = TextBlob(final_text)
         tweet_polarity=analysis.polarity
-        tweetsfinal.append((tweet,final_text,tweet_polarity))
+        
         if(tweet_polarity>0.00):
             positive+=1
+            tweetsfinal.append((search_query,tweet,final_text,tweet_polarity,'positive'))
         elif(tweet_polarity<0.00):
             negative+=1
+            tweetsfinal.append((search_query,tweet,final_text,tweet_polarity,'negative'))
         elif(tweet_polarity==0.00):
             neutral+=1
+            tweetsfinal.append((search_query,tweet,final_text,tweet_polarity,'neutral'))
         polarity += analysis.polarity
     #print(final_text)
-    
-
     print(polarity)
     print(f'Amount of positive tweets:{positive}')
     print(f'Amount of negative tweets:{negative}')
     print(f'Amount of neutral tweets:{neutral}')
-    df=pd.DataFrame(tweetsfinal,columns=['initial tweets','final tweets after procesing','polarity'])
-    df.to_csv('projectsample_1.csv',index=False)
+    return tweetsfinal
+    
+tweetsfinal=[]
+#search_query="death"
+numtweets=10
 
-search_query="death"
-numtweets=200
-sentiment_analysis(search_query,numtweets)
+woeid = 2459115
+  
+# fetching the trends
+trends = api.trends_place(id = woeid, exclude = "hashtags")
+  
+# printing the information
+print("The top trends for the location are :")
+  
+for value in trends:
+    for trend in value['trends']:
+        search_query=trend['name']
+        tweetsfinal=sentiment_analysis(search_query,numtweets)
+        
 
 
+df=pd.DataFrame(tweetsfinal,columns=['topic','initial tweets','final tweets after procesing','polarity','sentiment analysis'])
+df.to_csv('projectsample_1.csv',index=False)
