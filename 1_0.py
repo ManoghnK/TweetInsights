@@ -12,6 +12,7 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
 from tweepy import OAuthHandler 
 from textblob import TextBlob
+from bs4 import BeautifulSoup
 
 consumer_key="FGiELjdRAiyfaag6nOlbJVRIT"
 consumer_secret="jZh2gxfucS3QTxsHQwC86BCidHWOKayBreLfgSwi26iZ8um7Ql"
@@ -24,7 +25,7 @@ api = tweepy.API(auth)
 
 
 def sentiment_analysis(search_query,numtweets):
-    tweets=tweepy.Cursor(api.search,q=search_query,lang="en",since="2020-10-13").items(numtweets)
+    tweets=tweepy.Cursor(api.search,q=search_query+'-filter:retweets',lang="en",since="2020-10-13").items(numtweets)
     #tweetsfinal=[]
     polarity=0
 
@@ -35,26 +36,32 @@ def sentiment_analysis(search_query,numtweets):
     #print(tweets)
 
     for tweet in tweets:
-        final_text=tweet.text.replace('RT','')
-        if final_text.startswith(' @'):
-            position=final_text.index(':')
-            final_text =final_text[position+2:]
-        if final_text.startswith('@'):
-            position=final_text.index(' ')
-            final_text =final_text[position+2:]
+        textl1=tweet.text
+        textl2=''.join([c for c in textl1 if ord(c) < 128])#removing weird text
+        textl3=BeautifulSoup(textl2,'lxml').get_text()#removes html tags
+        textl4 = ' '.join(re.sub("(@[A-Za-z0-9_]+)|(#[A-Za-z0-9_]+)", " ", textl3).split())#removing mentions and hashtags
+        textl5 = ' '.join(re.sub("http://\S+|https://\S+", " ", textl4).split())#removing links
+        textl6 = ' '.join(re.sub("[\.\,\!\?\:\;\-\=]", " ", textl5).split())#removing punctuations
+        textl7 = textl6.lower()#converting to lower case
+        #if final_text.startswith(' @'):
+        #    position=final_text.index(':')
+        #    final_text =final_text[position+2:]
+        #if final_text.startswith('@'):
+        #    position=final_text.index(' ')
+        #    final_text =final_text[position+2:]
         #print(final_text.encode("utf-8"))
-        analysis = TextBlob(final_text)
-        tweet_polarity=analysis.polarity
+        analysis = TextBlob(textl7)      #main sentiment analysis
+        tweet_polarity=analysis.polarity#main sentiment analysis
         
         if(tweet_polarity>0.00):
             positive+=1
-            tweetsfinal.append((search_query,tweet,final_text,tweet_polarity,'positive'))
+            tweetsfinal.append((search_query,tweet,textl1,textl2,textl3,textl4,textl5,textl6,textl7,tweet_polarity,'positive'))
         elif(tweet_polarity<0.00):
             negative+=1
-            tweetsfinal.append((search_query,tweet,final_text,tweet_polarity,'negative'))
+            tweetsfinal.append((search_query,tweet,textl1,textl2,textl3,textl4,textl5,textl6,textl7,tweet_polarity,'negative'))
         elif(tweet_polarity==0.00):
             neutral+=1
-            tweetsfinal.append((search_query,tweet,final_text,tweet_polarity,'neutral'))
+            tweetsfinal.append((search_query,tweet,textl1,textl2,textl3,textl4,textl5,textl6,textl7,tweet_polarity,'neutral'))
         polarity += analysis.polarity
     #print(final_text)
     print(polarity)
@@ -82,5 +89,8 @@ for value in trends:
         
 
 
-df=pd.DataFrame(tweetsfinal,columns=['topic','initial tweets','final tweets after procesing','polarity','sentiment analysis'])
+df=pd.DataFrame(tweetsfinal,columns=['topic','Level 0','Level 1(Readable tweet)','Level 2(Remvoving weird data)','Level 3(removing html tags)','Level 4(removing hashtags and mentions)','Level 5(removing links)','Level 6(removing punctuations)','final tweets after procesing','polarity','sentiment analysis'])
+#df=df.groupby(['topic','initial tweets','final tweets after procesing','polarity','sentiment analysis']).apply(lambda x: x.sort_values('topic')).reset_index(drop=True)
+#df=df.drop_duplicates(subset=['topic','initial tweets','final tweets after procesing','polarity','sentiment analysis'],keep='first')
+df=df.drop_duplicates(subset='final tweets after procesing')
 df.to_csv('projectsample_1.csv',index=False)
