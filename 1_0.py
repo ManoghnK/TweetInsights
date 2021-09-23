@@ -67,13 +67,13 @@ tweetsfinal=[]
 #search_query="death"
 numtweets=10
 
-woeid = 2459115
+woeid = 2295424
   
 # fetching the trends
 trends = api.trends_place(id = woeid, exclude = "hashtags")
   
 # printing the information
-print("The top trends for the location are :")
+#print("The top trends for the location are :")
   
 for value in trends:
     for trend in value['trends']:
