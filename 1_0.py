@@ -43,13 +43,6 @@ def sentiment_analysis(search_query,numtweets):
         textl5 = ' '.join(re.sub("http://\S+|https://\S+", " ", textl4).split())#removing links
         textl6 = ' '.join(re.sub("[\.\,\!\?\:\;\-\=]", " ", textl5).split())#removing punctuations
         textl7 = textl6.lower()#converting to lower case
-        #if final_text.startswith(' @'):
-        #    position=final_text.index(':')
-        #    final_text =final_text[position+2:]
-        #if final_text.startswith('@'):
-        #    position=final_text.index(' ')
-        #    final_text =final_text[position+2:]
-        #print(final_text.encode("utf-8"))
         analysis = TextBlob(textl7)      #main sentiment analysis
         tweet_polarity=analysis.polarity#main sentiment analysis
         
@@ -74,13 +67,12 @@ tweetsfinal=[]
 #search_query="death"
 numtweets=10
 
-woeid = 2295424
+woeid = 2459115
   
 # fetching the trends
 trends = api.trends_place(id = woeid, exclude = "hashtags")
   
-# printing the information
-#print("The top trends for the location are :")
+
   
 for value in trends:
     for trend in value['trends']:
