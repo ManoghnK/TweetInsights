@@ -141,11 +141,11 @@ social=furnished(social_related_words)
 culture=furnished(culture_related_words)
 health=furnished(health_related_words)
 string1=economy
-print(string1)
+#print(string1)
 words=string1.split()
 #print(words)
 economy=" ".join(sorted(set(words),key=words.index))
-print(economy)
+#print(economy)
 
 string1=social
 words=string1.split()
@@ -270,7 +270,5 @@ for value in trends:
         search_query=trend['name']
         tweetsfinalpostprocessing=processing(search_query,numtweets)
 
-df2=pd.read_csv(r'preprocessing.csv')
-df2=df2.dropna(subset=['final_tweets_after_procesing'])       
 
 
