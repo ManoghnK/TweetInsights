@@ -11,7 +11,7 @@ def format_data_for_grouped_barchart(filename):
     groupwise_sentiments['Culture'] = [0,0,0]
     groupwise_sentiments['Social'] = [0,0,0]
     
-    with open(filename, 'r') as csvfile:
+    with open(filename, 'r',encoding="utf-8") as csvfile:
         lines = csv.reader(csvfile, delimiter = ',')
         for row in lines:
             if row[12] in ['Health', 'Economy', 'Culture', 'Social']:
@@ -62,7 +62,7 @@ def visualise_pie(filename):
     positive_count = 0
     negative_count = 0
     
-    with open(filename, 'r') as csvfile:
+    with open(filename, 'r',encoding="utf-8") as csvfile:
         lines = csv.reader(csvfile, delimiter = ',')
         for row in lines:
             tpLen = len(row)
@@ -88,7 +88,7 @@ def visualise_bar(filename):
     x = ['Economy', 'Social', 'Culture', 'Health']
     y = [0,0,0,0]
     
-    with open(filename,'r') as csvfile:
+    with open(filename,'r',encoding="utf-8") as csvfile:
         plots = csv.reader(csvfile, delimiter = ',')
         
         for row in plots:
