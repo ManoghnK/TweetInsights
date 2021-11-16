@@ -30,10 +30,10 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.metrics import jaccard_score
 
 
-consumer_key="FGiELjdRAiyfaag6nOlbJVRIT"
-consumer_secret="jZh2gxfucS3QTxsHQwC86BCidHWOKayBreLfgSwi26iZ8um7Ql"
-access_token="1417382105479225346-QMcDG6ncTzNgcKz2Xk2WCiJ4D3RMOM"
-access_token_secret="PdDyjlGFHZ6KOiWBX07xk24087XrugzJ3S7frV7XGOVrb"
+consumer_key="tFRlwd8t2IS095j9vQNQFx437"
+consumer_secret="hNJUfirU89mgYXzkT2RC8aTUKKsKz7dIjGtf0bPvHQIgQzXL0O"
+access_token="1169143770828419073-A7ADtimB06GMlTUr5Xiu1Tw9YgKYmC"
+access_token_secret="nSRjT4Lly8n1ZvuK2gdR2OumL7kEAh326JS6owCW0DozI"
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 
@@ -162,7 +162,6 @@ words=string1.split()
 culture=" ".join(sorted(set(words),key=words.index))
 culture
 
-
 def cluster_classification(df):
     twitterfinalpostclassification=[]
     for i in range(df.shape[0]):
@@ -182,6 +181,31 @@ def cluster_classification(df):
                 twitterfinalpostclassification.append((df.iat[i,0],df.iat[i,1],df.iat[i,2],df.iat[i,3],df.iat[i,4],df.iat[i,5],df.iat[i,6],df.iat[i,7],df.iat[i,8],df.iat[i,9],'Health',f))
         else:
                 twitterfinalpostclassification.append((df.iat[i,0],df.iat[i,1],df.iat[i,2],df.iat[i,3],df.iat[i,4],df.iat[i,5],df.iat[i,6],df.iat[i,7],df.iat[i,8],df.iat[i,9],'None',f))
+           
+        #print(tweet+":")
+        #print(s)
+    return twitterfinalpostclassification
+
+
+def sentiment_and_cluster(df):
+    twitterfinalpostclassification=[]
+    for i in range(df.shape[0]):
+        s = jaccard_similarity(economy, df.iat[i,9])
+        t = jaccard_similarity(social,  df.iat[i,9])
+        u = jaccard_similarity(culture, df.iat[i,9])
+        v = jaccard_similarity(health,  df.iat[i,9])
+        f=max(s,t,u,v)
+        if(f>0.5):
+            if(f==s):
+                twitterfinalpostclassification.append((df.iat[i,0],df.iat[i,1],df.iat[i,2],df.iat[i,3],df.iat[i,4],df.iat[i,5],df.iat[i,6],df.iat[i,7],df.iat[i,8],df.iat[i,9],df.iat[i,10],df.iat[i,11],'Economy',f))
+            elif(f==t):
+                twitterfinalpostclassification.append((df.iat[i,0],df.iat[i,1],df.iat[i,2],df.iat[i,3],df.iat[i,4],df.iat[i,5],df.iat[i,6],df.iat[i,7],df.iat[i,8],df.iat[i,9],df.iat[i,10],df.iat[i,11],'Social',f))
+            elif(f==u):
+                twitterfinalpostclassification.append((df.iat[i,0],df.iat[i,1],df.iat[i,2],df.iat[i,3],df.iat[i,4],df.iat[i,5],df.iat[i,6],df.iat[i,7],df.iat[i,8],df.iat[i,9],df.iat[i,10],df.iat[i,11],'Cultural',f))
+            elif(f==v):
+                twitterfinalpostclassification.append((df.iat[i,0],df.iat[i,1],df.iat[i,2],df.iat[i,3],df.iat[i,4],df.iat[i,5],df.iat[i,6],df.iat[i,7],df.iat[i,8],df.iat[i,9],df.iat[i,10],df.iat[i,11],'Health',f))
+        else:
+                twitterfinalpostclassification.append((df.iat[i,0],df.iat[i,1],df.iat[i,2],df.iat[i,3],df.iat[i,4],df.iat[i,5],df.iat[i,6],df.iat[i,7],df.iat[i,8],df.iat[i,9],df.iat[i,10],df.iat[i,11],'None',f))
            
         #print(tweet+":")
         #print(s)
@@ -219,13 +243,16 @@ def sentimentanalysis(df1):
     df=pd.DataFrame(tweetsfinalpostsentiment,columns=['topic','Level 0','Level 1(Readable tweet)','Level 2(Remvoving weird data)','Level 3(removing html tags)','Level 4(removing hashtags and mentions)','Level 5(removing links)','Level 6(removing punctuations)','Level 7(Converting into lower case)','final tweets after procesing','polarity','sentiment analysis'])
     df=df.drop_duplicates(subset='final tweets after procesing')
     df.to_csv('sentimentanalysis.csv',index=False)
-    return tweetsfinalpostsentiment
+    # return tweetsfinalpostsentiment
+    return df
 
 
 
 def processing(search_query,numtweets):
     #tweetsfinal=[]
     tweets=tweepy.Cursor(api.search,q=search_query+'-filter:retweets',lang="en",since="2020-10-13").items(numtweets)
+    
+    # tweets=tweepy.Cursor(api.search,q=search_query+'-filter:retweets',lang="en").items(numtweets)
 
     #print(tweets)
 
@@ -243,11 +270,17 @@ def processing(search_query,numtweets):
     df1 = df1.dropna()
     df1=df1.drop_duplicates(subset='final_tweets_after_procesing')
     df1.to_csv('preprocessing.csv',index=False)
-    tweetsfinalpostsentiment=sentimentanalysis(df1)
+    tweetsfinalpostsentiment_df=sentimentanalysis(df1)
     twitterfinalpostclassification=cluster_classification(df1)
-    df2=pd.DataFrame(twitterfinalpostclassification,columns=['topic','Level 0','Level 1(Readable tweet)','Level 2(Remvoving weird data)','Level 3(removing html tags)','Level 4(removing hashtags and mentions)','Level 5(removing links)','Level 6(removing punctuations)','Level 7(Converting into lower case)','final tweets after procesing','category','Score'])
+    
+    df2=pd.DataFrame(twitterfinalpostclassification,columns=['topic','Level 0','Level 1(Readable tweet)','Level 2(Remvoving weird data)','Level 3(removing html tags)','Level 4(removing hashtags and mentions)','Level 5(removing links)','Level 6(removing punctuations)','Level 7(Converting into lower case)','final tweets after procesing', 'category','Score' ])
     df2=df2.drop_duplicates(subset='final tweets after procesing')
     df2.to_csv('clusterclassification.csv',index=False)
+    
+    twitterfinalpostclassification=sentiment_and_cluster(tweetsfinalpostsentiment_df)
+    df_combined=pd.DataFrame(twitterfinalpostclassification,columns=['topic','Level 0','Level 1(Readable tweet)','Level 2(Remvoving weird data)','Level 3(removing html tags)','Level 4(removing hashtags and mentions)','Level 5(removing links)','Level 6(removing punctuations)','Level 7(Converting into lower case)','final tweets after procesing', 'polarity','sentiment analysis', 'category','Score' ])
+    df_combined=df_combined.drop_duplicates(subset='final tweets after procesing')
+    df_combined.to_csv('sentiment_and_cluster.csv',index=False)
     return tweetsfinalpostprocessing
 
 
@@ -256,12 +289,12 @@ def processing(search_query,numtweets):
 tweetsfinalpostprocessing=[]
 tweetsfinalpostsentiment=[]
 #search_query="death"
-numtweets=5
+numtweets=6
 
 woeid = 2459115
   
 # fetching the trends
-trends = api.trends_place(id = woeid, exclude = "hashtags")
+trends = api.trends_place(id = woeid, exclude = "hashtags") # get_place_trends
 
 
   
